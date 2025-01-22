@@ -1,0 +1,29 @@
+name = "nav-api"
+main = "dist/index.js"
+compatibility_date = "2024-12-27"
+
+routes = [
+  { pattern = "your-domain.com", custom_domain = true }
+]
+
+kv_namespaces = [
+  { binding = "DB", id = "your-kv-db-id" }
+]
+
+[vars]
+AllowOrigin = "your-front.domain.com"
+TokenName = "your-token-name"
+AdminName = "your-admin-name"
+InitAuth = "your-init-auth"
+
+[[unsafe.bindings]]
+name = "WARN_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 30, period = 60 }
+
+[[unsafe.bindings]]
+name = "BAN_LIMITER"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 40, period = 60 }
