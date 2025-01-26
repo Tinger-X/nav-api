@@ -13,8 +13,6 @@ kv_namespaces = [
 [vars]
 AllowOrigin = "your-front.domain.com"
 TokenName = "your-token-name"
-AdminName = "your-admin-name"
-InitAuth = "your-init-auth"
 
 [[unsafe.bindings]]
 name = "WARN_LIMITER"

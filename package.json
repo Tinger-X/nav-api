@@ -1,9 +1,6 @@
 {
   "name": "nav-api",
   "version": "v1.0",
-  "devDependencies": {
-    "wrangler": "3.99.0"
-  },
   "private": true,
   "scripts": {
     "build": "esbuild src/index.js --bundle --platform=node --format=esm --outfile=dist/index.js",
@@ -12,5 +9,8 @@
   },
   "dependencies": {
     "esbuild": "^0.24.2"
+  },
+  "devDependencies": {
+    "wrangler": "^3.105.1"
   }
 }

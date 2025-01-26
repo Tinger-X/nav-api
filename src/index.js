@@ -1,10 +1,10 @@
 class NavAPI {
 	static #StrBase = "qwertyuioplkjhgfdsazxcvbnm0123456789MNBVCXZASDFGHJKLPOIUYTREWQ";
-	static #InitDetail = [  // 初始化时，绑定到管理员用户的快捷方式详情，group列表
-		"bing",  // 搜索引擎，除首项外其它为group详情
-		[  // 单个group
-			[0, "基础工具"],  // 该group[是否折叠, group名称]，除首项外的其它项为快捷方式详情
-			["在线PS", "https://ps.gaoding.com/", "https://www.uupoop.com/favicon.ico"],  // 名称、地址、icon地址
+	static #InitDetail = [
+		"bing",
+		[
+			[0, "基础工具"],
+			["在线PS", "https://ps.gaoding.com/", "https://www.uupoop.com/favicon.ico"],
 			["ProcessOn", "https://www.processon.com/diagrams", "https://www.processon.com/favicon.ico"],
 			["极简壁纸", "https://bz.zzzmh.cn/index", "https://bz.zzzmh.cn/favicon.ico"],
 			["IconFont", "https://www.iconfont.cn/", "https://img.alicdn.com/imgextra/i2/O1CN01ZyAlrn1MwaMhqz36G_!!6000000001499-73-tps-64-64.ico"],
@@ -234,15 +234,58 @@ class NavAPI {
 
 	////////////////////////////////////////////////// = Link = //////////////////////////////////////////////////
 	async #addLink(detail) {
-		return this.#restResp({ code: 500, msg: "请稍等" });
+		try {
+			const { gid, info } = await this.request.json();
+			if (gid < 0 || gid > detail.length - 2) {
+				throw new Error("参数错误");
+			}
+			if (info.constructor !== Array || info.length !== 3) {
+				throw new Error("参数错误");
+			}
+			detail[gid + 1].push(info);
+			await this.#setKV(`${NavAPI.#Prefix.token}${this.token}`, detail);
+			return this.#restResp({ code: 200, data: null });
+		} catch (e) {
+			console.log(e);
+			return this.#restResp({ code: 400, msg: "参数错误" });
+		}
 	}
 
 	async #editLink(detail) {
-		return this.#restResp({ code: 500, msg: "请稍等" });
+		try {
+			const { info, gid, lid } = await this.request.json();
+			if (gid < 0 || gid > detail.length - 2) {
+				throw new Error("参数错误");
+			} else if (lid < 0 || lid > detail[gid + 1].length - 2) {
+				throw new Error("参数错误");
+			}
+			if (info.constructor !== Array || info.length !== 3) {
+				throw new Error("参数错误");
+			}
+			detail[gid + 1][lid + 1] = info;
+			await this.#setKV(`${NavAPI.#Prefix.token}${this.token}`, detail);
+			return this.#restResp({ code: 200, data: null });
+		} catch (e) {
+			console.log(e);
+			return this.#restResp({ code: 400, msg: "参数错误" });
+		}
 	}
 
 	async #deleteLink(detail) {
-		return this.#restResp({ code: 500, msg: "请稍等" });
+		try {
+			const { gid, lid } = await this.request.json();
+			if (gid < 0 || gid > detail.length - 2) {
+				throw new Error("参数错误");
+			} else if (lid < 0 || lid > detail[gid + 1].length - 2) {
+				throw new Error("参数错误");
+			}
+			detail[gid + 1].splice(lid + 1, 1);
+			await this.#setKV(`${NavAPI.#Prefix.token}${this.token}`, detail);
+			return this.#restResp({ code: 200, data: null });
+		} catch (e) {
+			console.log(e);
+			return this.#restResp({ code: 400, msg: "参数错误" });
+		}
 	}
 
 	async handleLink() {
@@ -292,7 +335,7 @@ class NavAPI {
 		try {
 			const gid = parseInt(await this.request.text());
 			if (gid < 0 || gid > detail.length - 2) {
-				return;
+				throw new Error("参数错误");
 			}
 			detail.splice(gid + 1, 1);
 			await this.#setKV(`${NavAPI.#Prefix.token}${this.token}`, detail);
@@ -383,13 +426,13 @@ class NavAPI {
 
 	////////////////////////////////////////////////// = Danger[test in development only] = //////////////////////////////////////////////////
 	async test() {
-		// return new Response("blank");
+		return new Response("blank");
 		try {
 			const value = await this.DB.list();
 			// for (const item of value.keys) {
-			// const v = await this.DB.get(item.name);
-			// console.log(item.name, v);
-			// await this.DB.delete(item.name);
+			// 	const v = await this.DB.get(item.name);
+			// 	console.log(item.name, v);
+			// 	await this.DB.delete(item.name);
 			// }
 			return new Response(JSON.stringify(value.keys), {
 				status: 200
@@ -413,7 +456,7 @@ export default {
 			engine: api.handleEngine,
 			user: api.handleUser,
 			init: api.handleInit,
-			link: api.handleLink,  // TODO: 增、删、改
+			link: api.handleLink,
 			group: api.handleGroup,
 			rank: api.handleRank,
 			test: api.test
@@ -421,6 +464,6 @@ export default {
 		if (!rootMap.hasOwnProperty(api.path_list[0])) {
 			return Response.json({ code: 400, msg: "接口不存在" });
 		}
-		return rootMap[api.path_list[0]].bind(api)();
+		return rootMap[api.path_list[0]].call(api);
 	}
 };
